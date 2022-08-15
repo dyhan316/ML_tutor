@@ -1,0 +1,10 @@
+*.zip
+
+/ppt_slides
+
+/CODES_and_STUFF/CIFAR_10
+/CODES_and_STUFF/HW3
+/CODES_and_STUFF/HW4
+/CODES_and_STUFF/data
+/CODES_and_STUFF/zip_files_already_extracted
+/CODES_and_STUFF/pdf_files
