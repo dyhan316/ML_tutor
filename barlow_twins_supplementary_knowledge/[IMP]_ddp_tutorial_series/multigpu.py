@@ -9,6 +9,12 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 import os
 
+"""
+뭐가 여러번 돌아가는지 아는 법 : 사실 "__main__"빼고는 다 여러번 돌아가는 것 같기는 한데, "rank" (or equivalent, gpu_id)가 들어간 놈이면 모두다 여러번 돌아가는 것이라고 이해해도 될듯!
+
+"""
+
+
 #===========ADDED=================#
 def ddp_setup(rank, world_size):
     """
@@ -22,8 +28,12 @@ def ddp_setup(rank, world_size):
     #initializes the default distributed process group (nccl 이라는 backend로 여기서 설정하자)(nccl : gpu backends)
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
 #===================================#
-    
-    
+
+
+
+###ASK ASK ASK
+#그러면 밑에서 어느것이 여러번 작동하고 어느것이 한번 작동하는 거지?? 잘 이해 안됨...
+#########
     
 #===========CHANGED=================#
 #===================================#
@@ -124,7 +134,7 @@ def prepare_dataloader(dataset: Dataset, batch_size: int):
         #===================================#
         
         #===========ADDED===================#
-        sampler=DistributedSampler(dataset)   #added so that we can divide the batch and send it to each processes
+        sampler=DistributedSampler(dataset)   #added so that we can divide the batch and send it to each processes #여기다는 gpu몇개인지/rank정보를 안줘도 알아서 하는 듯?
         #===================================#
     )
 
@@ -133,18 +143,20 @@ def prepare_dataloader(dataset: Dataset, batch_size: int):
 #원래 : def main(device: int, total_epochs: int, batch_size: int):
 
 def main(rank: int, world_size: int, save_every: int, total_epochs: int, batch_size: int):
-    #changed because we need to provde the rank and 
+    #changed because we need to provde the rank and other stuff
 #===================================#
     #==========ADDED====================#
     ddp_setup(rank, world_size)             #initialize the DDP group (which we defined as ddp_setup)
     #===================================#
     dataset, model, optimizer = load_train_objs()
-    train_data = prepare_dataloader(dataset, batch_size)
+    train_data = prepare_dataloader(dataset, batch_size) #modified dataloader due to different sampler
     trainer = Trainer(model, train_data, optimizer, rank, save_every) #이것도 'device'에서 'rank'로 바뀜 
     trainer.train(total_epochs)
     
-    destroy_process_group()                #added to destroy the process group once it's done
-
+    #==========ADDED====================#
+    destroy_process_group()                
+    #added to destroy the process group once it's done
+    #===================================#
 
 if __name__ == "__main__":
     import argparse
@@ -154,5 +166,8 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=32, help='Input batch size on each device (default: 32)')
     args = parser.parse_args()
     
-    world_size = torch.cuda.device_count()
-    mp.spawn(main, args=(world_size, args.save_every, args.total_epochs, args.batch_size), nprocs=world_size)
+
+    #==========ADDED====================#
+    world_size = torch.cuda.device_count() #added so that we an take the world_size below
+    mp.spawn(main, args=(world_size, args.save_every, args.total_epochs, args.batch_size), nprocs=world_size)      #i.e. spawn multiprocessing (i.e. run the func "main"), and with put "args" as the input to the main()함수 (이때 spawn시 rank는 안넣어도 mp.spawn이 알아서 만들어줌), with total of nproc 갯수 의 processes
+    #===================================#
