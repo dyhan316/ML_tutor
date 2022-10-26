@@ -14,4 +14,6 @@
 /barlow_twins_supplementary_knowledge/data
 **/*.pth
 *.pth
-
+*.pt
+*.mgz
+*.zip
