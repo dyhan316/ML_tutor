@@ -10,8 +10,10 @@
 /CODES_and_STUFF/pdf_files
 /CODES_and_STUFF/MNIST
 /learn_optuna/FashionMNIST
-
 /barlow_twins_supplementary_knowledge/data
+/CODES_and_STUFF/YooSup/log/train
+
+
 **/*.pth
 *.pth
 *.pt
