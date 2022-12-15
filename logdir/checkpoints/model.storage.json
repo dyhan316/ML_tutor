@@ -1,0 +1,13 @@
+{
+  "logdir": "./logdir/checkpoints",
+  "topk": 1,
+  "loader_key": null,
+  "metric_key": null,
+  "minimize": false,
+  "storage": [
+    {
+      "logpath": "./logdir/checkpoints/model.0003.pth",
+      "metric": 3
+    }
+  ]
+}
